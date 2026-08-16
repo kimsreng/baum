@@ -95,14 +95,12 @@ abstract class Model extends BaseModel {
    * @return boolean
    */
   public function areSoftDeletesEnabled() {
-    // To determine if there's a global soft delete scope defined we must
-    // first determine if there are any, to workaround a non-existent key error.
+    // Laravel 13 runs model booting while the model is still initializing,
+    // so avoiding a fresh instance here prevents re-entrant boot recursion.
     $globalScopes = $this->getGlobalScopes();
 
     if ( count($globalScopes) === 0 ) return false;
 
-    // Now that we're sure that the calling class has some kind of global scope
-    // we check for the SoftDeletingScope existance
     return static::hasGlobalScope(new SoftDeletingScope);
   }
 
@@ -113,7 +111,7 @@ abstract class Model extends BaseModel {
    * @return boolean
    */
   public static function softDeletesEnabled() {
-    return with(new static)->areSoftDeletesEnabled();
+    return static::hasGlobalScope(new SoftDeletingScope);
   }
 
 }
